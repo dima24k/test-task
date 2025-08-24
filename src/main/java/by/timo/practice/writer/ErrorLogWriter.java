@@ -3,6 +3,8 @@ package by.timo.practice.writer;
 import by.timo.practice.exception.IOProcessingException;
 import by.timo.practice.util.EmployeeWriterUtil;
 import by.timo.practice.util.SbRecordConstants;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,9 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ErrorLogWriter {
-    private ErrorLogWriter() {}
-
     public static void writeRecordToErrorLog(List<String> lines, Path path) {
         if (lines == null || lines.isEmpty()) {
             return;

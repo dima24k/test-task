@@ -1,85 +1,64 @@
 package by.timo.practice.parser;
 
-import by.timo.practice.model.InputArgs;
-import by.timo.practice.model.enums.OrderType;
-import by.timo.practice.model.enums.OutputType;
-import by.timo.practice.model.enums.SortType;
-import by.timo.practice.parser.strategy.ArgParserStrategy;
-import by.timo.practice.parser.strategy.impl.OrderStrategy;
-import by.timo.practice.parser.strategy.impl.OutputStrategy;
-import by.timo.practice.parser.strategy.impl.PathStrategy;
-import by.timo.practice.parser.strategy.impl.SortStrategy;
-import by.timo.practice.parser.strategy.impl.StatStrategy;
 import by.timo.practice.model.ArgKeyValue;
-import by.timo.practice.util.InputArgsConstants;
+import by.timo.practice.model.InputArgs;
+import by.timo.practice.parser.strategy.ArgParserStrategy;
+import by.timo.practice.parser.strategy.ArgParserStrategyRegistry;
+import by.timo.practice.type.ArgKey;
+import by.timo.practice.validate.ArgsValidator;
 import by.timo.practice.validate.SbRecordValidator;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-import java.nio.file.Path;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-public class ArgsParser {
-    private static final Map<String, ArgParserStrategy> argParsersStrategy = Map.of(
-            InputArgsConstants.SORT_LONG, new SortStrategy(),
-            InputArgsConstants.SORT_SHORT, new SortStrategy(),
-            InputArgsConstants.STAT, new StatStrategy(),
-            InputArgsConstants.OUTPUT_LONG, new OutputStrategy(),
-            InputArgsConstants.OUTPUT_SHORT, new OutputStrategy(),
-            InputArgsConstants.ORDER, new OrderStrategy(),
-            InputArgsConstants.PATH, new PathStrategy()
-    );
-
-    private ArgsParser() {}
-
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ArgsParser {
     public static InputArgs parseArgs(String[] args) {
         if (args == null || args.length == 0) {
             throw new IllegalArgumentException("No arguments provided");
         }
 
         InputArgs inputArgs = new InputArgs();
+        Set<String> seenKeys = new HashSet<>();
 
         for (String arg : args) {
-            if (SbRecordValidator.isStringEmpty(arg)) {
+            if (SbRecordValidator.isStringNullOrEmpty(arg)) {
                 throw new IllegalArgumentException("Argument cannot be null or empty");
             }
 
-            ArgKeyValue keyValue = ArgKeyValue.get(arg);
-            String key = keyValue.getKey();
-            String value = keyValue.getValue();
+            ArgKeyValue kv = ArgKeyValue.get(arg);
+            String key = kv.getKey();
+            String value = kv.getValue();
 
-            ArgParserStrategy strategy = argParsersStrategy.get(key);
-
-            if (strategy == null) {
-                throw new IllegalArgumentException("Unknown argument: " + key);
+            if (Objects.equals(key, ArgKey.SORT_SHORT.getKey())) {
+                key = ArgKey.SORT_LONG.getKey();
             }
 
+            if (Objects.equals(key, ArgKey.OUTPUT_SHORT.getKey())) {
+                key = ArgKey.OUTPUT_LONG.getKey();
+            }
+
+            if (!seenKeys.add(key)) {
+                throw new IllegalArgumentException("Duplicate argument: " + key);
+            }
+
+            ArgKey validKey = ArgKey.from(key);
+            ArgParserStrategy strategy = ArgParserStrategyRegistry.getArgParserStrategy(validKey);
             strategy.parse(value, inputArgs);
         }
 
-        validateArgs(
+        ArgsValidator.validateArgs(
                 inputArgs.isStat(),
                 inputArgs.getOutputType(),
                 inputArgs.getOutputFilePath(),
-                inputArgs.getSortField(),
-                inputArgs.isAscendingFlag()
+                inputArgs.getSortType(),
+                inputArgs.getOrderType()
         );
 
         return inputArgs;
     }
-
-    private static void validateArgs(boolean stat, OutputType output,
-                                     Path path, SortType sort, OrderType ascending) {
-        if (!stat && (output != null || path != null)) {
-            throw new IllegalArgumentException("arguments --output, -o, --path is only allowed with --stat");
-        }
-        if (Objects.equals(output, OutputType.FILE) && path == null) {
-            throw new IllegalArgumentException("argument --output=file requires --path");
-        }
-        if (path != null && !Objects.equals(output, OutputType.FILE)) {
-            throw new IllegalArgumentException("argument --path is only valid when --output=file or -o=file");
-        }
-        if (ascending != null && sort == null) {
-            throw new IllegalArgumentException("argument --order can't be used without sort argument");
-        }
-    }
 }
+

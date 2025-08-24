@@ -1,8 +1,8 @@
 package by.timo.practice.parser.strategy.impl;
 
 import by.timo.practice.model.InputArgs;
-import by.timo.practice.model.enums.OutputType;
 import by.timo.practice.parser.strategy.ArgParserStrategy;
+import by.timo.practice.type.OutputType;
 
 public class OutputStrategy implements ArgParserStrategy {
     @Override

@@ -1,28 +1,34 @@
 package by.timo.practice.model;
 
-import by.timo.practice.model.enums.PostType;
+import by.timo.practice.type.PostType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@SuperBuilder
 public class Employee extends EmployeeBase {
+    private Long managerId;
 
-    private long managerId;
-
-    public Employee() {
-    }
-
-    public Employee(long id, String name, BigDecimal salary, long managerId) {
+    public Employee(Long id, String name, BigDecimal salary, Long managerId) {
         super(id, name, salary);
         super.setPost(PostType.EMPLOYEE.getPosition());
         this.managerId = managerId;
     }
 
-    public long getManagerId() {
-        return managerId;
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
     }
 
-    public void setManagerId(long managerId) {
-        this.managerId = managerId;
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

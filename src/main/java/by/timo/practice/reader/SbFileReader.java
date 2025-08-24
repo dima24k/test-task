@@ -1,7 +1,9 @@
 package by.timo.practice.reader;
 
-import by.timo.practice.util.SbRecordConstants;
 import by.timo.practice.exception.IOProcessingException;
+import by.timo.practice.util.SbRecordConstants;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,9 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SbFileReader {
-    private SbFileReader() {}
-
     public static List<String> readSbFiles() {
         List<String> listLines = new ArrayList<>();
 
@@ -27,7 +28,6 @@ public final class SbFileReader {
         if (listLines.isEmpty()) {
             throw new IOProcessingException("no '.sb' files found in the project directory");
         }
-
         return listLines;
     }
 
@@ -38,7 +38,6 @@ public final class SbFileReader {
             if (lines.isEmpty()) {
                 throw new IOProcessingException("file " + path.getFileName() + " is empty");
             }
-
             listLines.addAll(lines);
         } catch (IOException e) {
             throw new IOProcessingException("error while reading file: " + path.getFileName(), e);

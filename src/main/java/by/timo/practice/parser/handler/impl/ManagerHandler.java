@@ -1,26 +1,37 @@
 package by.timo.practice.parser.handler.impl;
 
-import by.timo.practice.builder.ManagerBuilder;
 import by.timo.practice.model.EmployeeBase;
 import by.timo.practice.model.Manager;
 import by.timo.practice.parser.ParseRegistry;
 import by.timo.practice.parser.handler.RecordHandler;
+import by.timo.practice.util.SbRecordConstants;
 import by.timo.practice.validate.SbRecordValidator;
+import by.timo.practice.validate.strategy.ValidationStrategy;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-import static by.timo.practice.model.enums.PostType.MANAGER;
+import static by.timo.practice.type.PostType.MANAGER;
 
 public class ManagerHandler implements RecordHandler {
     @Override
-    public void handle(String[] fields, List<EmployeeBase> out, List<String> err, String cleaned) {
-        if (!SbRecordValidator.strategies.get(MANAGER).validate(fields)) {
+    public void handle(String[] fields, List<EmployeeBase> employees, List<String> err, String cleaned) {
+        ValidationStrategy validationStrategy = SbRecordValidator.strategies.get(MANAGER);
+
+        if (!validationStrategy.validate(fields)) {
             err.add(cleaned);
             return;
         }
 
-        Manager manager = new ManagerBuilder().build(fields);
+        Manager manager = Manager.builder()
+                .post(fields[SbRecordConstants.POST_INDEX])
+                .id(Long.parseLong(fields[SbRecordConstants.ID_INDEX]))
+                .name(fields[SbRecordConstants.NAME_INDEX])
+                .salary(new BigDecimal(fields[SbRecordConstants.SALARY_INDEX]))
+                .department(fields[SbRecordConstants.UNIQUE_FIELD_INDEX])
+                .build();
+
         ParseRegistry.registerManager(manager);
-        out.add(manager);
+        employees.add(manager);
     }
 }

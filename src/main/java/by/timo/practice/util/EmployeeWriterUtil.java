@@ -5,8 +5,10 @@ import by.timo.practice.model.DepartmentStat;
 import by.timo.practice.model.Employee;
 import by.timo.practice.model.EmployeeBase;
 import by.timo.practice.model.Manager;
-import by.timo.practice.model.enums.OrderType;
-import by.timo.practice.model.enums.SortType;
+import by.timo.practice.type.OrderType;
+import by.timo.practice.type.SortType;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,13 +19,13 @@ import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EmployeeWriterUtil {
-    private EmployeeWriterUtil() {}
-
     public static List<Manager> getManagers(List<EmployeeBase> employees) {
         return employees.stream()
                 .filter(Manager.class::isInstance)
@@ -43,6 +45,20 @@ public final class EmployeeWriterUtil {
                 .collect(Collectors.groupingBy(Employee::getManagerId, Collectors.toList()));
     }
 
+    public static List<String> getEmployeesWithoutManagers(
+            List<Employee> employees,
+            List<Manager> managers
+    ) {
+        Set<Long> managerIds = managers.stream()
+                .map(Manager::getId)
+                .collect(Collectors.toSet());
+
+        return employees.stream()
+                .filter(e -> !managerIds.contains(e.getManagerId()))
+                .map(Object::toString)
+                .toList();
+    }
+
     public static SortedSet<DepartmentStat> collectsStat(
             Map<Long, List<Employee>> employeesByManager,
             List<Manager> managers
@@ -50,7 +66,7 @@ public final class EmployeeWriterUtil {
         return managers.stream()
                 .map(manager -> buildStat(
                         manager, employeesByManager.getOrDefault(manager.getId(), List.of())))
-                .collect(Collectors.toCollection( () -> new TreeSet<>(Comparator.comparing(DepartmentStat::getDepartment))));
+                .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(DepartmentStat::getDepartment))));
 
     }
 
@@ -76,7 +92,7 @@ public final class EmployeeWriterUtil {
     }
 
     public static BigDecimal roundUp2(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.CEILING);
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
 
     public static Comparator<Employee> employeeComparator(SortType sortType, OrderType orderType) {
@@ -111,7 +127,7 @@ public final class EmployeeWriterUtil {
         return path;
     }
 
-    public static void ensureParentDirs(Path file)  {
+    public static void ensureParentDirs(Path file) {
         Path parent = file.toAbsolutePath().getParent();
 
         if (parent != null) {

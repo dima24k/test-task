@@ -1,13 +1,13 @@
 package by.timo.practice.parser.strategy.impl;
 
 import by.timo.practice.model.InputArgs;
-import by.timo.practice.model.enums.OrderType;
 import by.timo.practice.parser.strategy.ArgParserStrategy;
+import by.timo.practice.type.OrderType;
 
 public class OrderStrategy implements ArgParserStrategy {
     @Override
     public void parse(String value, InputArgs inputArgs) {
-        OrderType ascending = OrderType.toOrder(value);
-        inputArgs.setAscendingFlag(ascending);
+        OrderType orderType = OrderType.toOrder(value);
+        inputArgs.setOrderType(orderType);
     }
 }

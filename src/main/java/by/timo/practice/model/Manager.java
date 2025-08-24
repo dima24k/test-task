@@ -1,33 +1,25 @@
 package by.timo.practice.model;
 
-import by.timo.practice.model.enums.PostType;
+import by.timo.practice.type.PostType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@SuperBuilder
 public class Manager extends EmployeeBase {
     private String department;
 
-    public Manager() {
-    }
-
-    public Manager(long id, String name, BigDecimal salary, String department) {
+    public Manager(Long id, String name, BigDecimal salary, String department) {
         super(id, name, salary);
         super.setPost(PostType.MANAGER.getPosition());
         this.department = department;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    @Override
-    public String toString() {
-        return getPost() + ", " + getId() + ", " + getName() + ", " + getSalary() + ", " + department;
     }
 
     @Override
@@ -42,5 +34,10 @@ public class Manager extends EmployeeBase {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), department);
+    }
+
+    @Override
+    public String toString() {
+        return getPost() + ", " + getId() + ", " + getName() + ", " + getSalary() + ", " + department;
     }
 }

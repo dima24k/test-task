@@ -1,21 +1,18 @@
-package by.timo.practice.model.enums;
+package by.timo.practice.type;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+@Getter
+@RequiredArgsConstructor
 public enum OutputType {
     CONSOLE("console"),
     FILE("file");
 
     private final String output;
-
-    OutputType(String output) {
-        this.output = output;
-    }
-
-    public String getOutput() {
-        return output;
-    }
 
     public static OutputType toOutputType(String value) {
         return Arrays.stream(values())

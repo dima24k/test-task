@@ -1,16 +1,18 @@
-package by.timo.practice.model.enums;
+package by.timo.practice.type;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+@Getter
+@RequiredArgsConstructor
 public enum SortType {
     NAME("name"),
     SALARY("salary");
 
     private final String sort;
-
-    SortType(String sort) { this.sort = sort; }
-    public String getSort() { return sort; }
 
     public static SortType toSortField(String value) {
         return Arrays.stream(values())

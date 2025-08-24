@@ -6,11 +6,13 @@ import by.timo.practice.model.Employee;
 import by.timo.practice.model.EmployeeBase;
 import by.timo.practice.model.InputArgs;
 import by.timo.practice.model.Manager;
-import by.timo.practice.model.enums.OrderType;
-import by.timo.practice.model.enums.OutputType;
-import by.timo.practice.model.enums.SortType;
+import by.timo.practice.type.OrderType;
+import by.timo.practice.type.OutputType;
+import by.timo.practice.type.SortType;
 import by.timo.practice.util.EmployeeWriterUtil;
 import by.timo.practice.util.SbRecordConstants;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,23 +29,28 @@ import static by.timo.practice.util.EmployeeWriterUtil.collectsStat;
 import static by.timo.practice.util.EmployeeWriterUtil.employeeComparator;
 import static by.timo.practice.util.EmployeeWriterUtil.getEmployeeByDepartment;
 import static by.timo.practice.util.EmployeeWriterUtil.getEmployees;
+import static by.timo.practice.util.EmployeeWriterUtil.getEmployeesWithoutManagers;
 import static by.timo.practice.util.EmployeeWriterUtil.getManagers;
 
-public class EmployeesWriter {
-    private EmployeesWriter () {}
-
-    public static void writeEmployees(InputArgs inputArgs, List<EmployeeBase> allEmployees) {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class EmployeesWriter {
+    public static void writeEmployees(InputArgs inputArgs, List<EmployeeBase> allEmployees, List<String> errorLogLines) {
         List<Manager> managers = getManagers(allEmployees);
         List<Employee> employees = getEmployees(allEmployees);
         Map<Long, List<Employee>> employeesByManager = getEmployeeByDepartment(employees);
+        List<String> employeesWithoutManagers = getEmployeesWithoutManagers(employees, managers);
 
-        if (inputArgs.getSortField() != null) {
+        if (!employeesWithoutManagers.isEmpty()) {
+            errorLogLines.addAll(employeesWithoutManagers);
+        }
+
+        if (inputArgs.getSortType() != null) {
             writeDepartmentToFile(
                     managers,
                     employeesByManager,
                     inputArgs.getOutputFilePath(),
-                    inputArgs.isAscendingFlag(),
-                    inputArgs.getSortField());
+                    inputArgs.getOrderType(),
+                    inputArgs.getSortType());
         }
 
         if (!inputArgs.isStat()) {
@@ -64,7 +71,7 @@ public class EmployeesWriter {
     }
 
     private static void printStat(Set<DepartmentStat> stats) {
-        System.out.println("department, min, max, avg");
+        System.out.println("department, min, max, avg\n");
 
         stats.forEach(stat -> System.out.printf(
                 "%s, %.2f, %.2f, %.2f%n",
@@ -81,6 +88,7 @@ public class EmployeesWriter {
 
         List<String> lines = new ArrayList<>();
         lines.add(parameters);
+        lines.add("");
         lines.addAll(stats.stream()
                 .map(DepartmentStat::toString)
                 .toList());
@@ -95,7 +103,12 @@ public class EmployeesWriter {
     }
 
     private static void writeDepartmentToFile(
-            List<Manager> managers , Map<Long, List<Employee>> employeesByManager, Path path, OrderType orderType, SortType sortType) {
+            List<Manager> managers,
+            Map<Long, List<Employee>> employeesByManager,
+            Path path,
+            OrderType orderType,
+            SortType sortType
+    ) {
         Path baseDir = EmployeeWriterUtil.getBaseDir(path, SbRecordConstants.PROJECT_DIRECTORY);
 
         Comparator<Employee> employeeComparator = (sortType != null && orderType != null)
@@ -103,7 +116,7 @@ public class EmployeesWriter {
                 : null;
 
         managers.forEach(manager -> {
-            Path file = baseDir.resolve(manager.getDepartment() + ".txt");
+            Path file = baseDir.resolve(manager.getDepartment() + ".sb");
             EmployeeWriterUtil.ensureParentDirs(file);
 
             List<Employee> employees = new ArrayList<>(employeesByManager.getOrDefault(manager.getId(), List.of()));

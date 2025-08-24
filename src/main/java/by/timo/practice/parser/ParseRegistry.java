@@ -3,35 +3,44 @@ package by.timo.practice.parser;
 import by.timo.practice.exception.EmployeeDuplicateException;
 import by.timo.practice.model.Employee;
 import by.timo.practice.model.Manager;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParseRegistry {
-    private static final Map<Long, Employee> employees = new LinkedHashMap<>();
-    private static final Map<Long, String> managerNameById = new LinkedHashMap<>();
-    private static final Map<String, Long> departmentToManagerId = new LinkedHashMap<>();
+    @Getter
+    private static final Map<Long, Employee> EMPLOYEES = new LinkedHashMap<>();
 
-    private ParseRegistry () {}
+    @Getter
+    private static final Map<Long, String> MANAGER_NAME_BY_ID = new LinkedHashMap<>();
+
+    @Getter
+    private static final Map<String, Long> DEPARTMENT_TO_MANAGER_ID = new LinkedHashMap<>();
 
     public static void registerEmployee(Employee e) {
-        long id = e.getId();
-        if (employees.containsKey(id)) {
+        Long id = e.getId();
+
+        if (EMPLOYEES.containsKey(id)) {
             throw new EmployeeDuplicateException("Duplicate employee id: " + id);
         }
-        if (managerNameById.containsKey(id)) {
+
+        if (MANAGER_NAME_BY_ID.containsKey(id)) {
             throw new EmployeeDuplicateException("Employee id conflicts with existing manager id: " + id);
         }
-        employees.put(id, e);
+        EMPLOYEES.put(id, e);
     }
 
-    // проверка manager на корректность id, department, name с другими работниками
     public static void registerManager(Manager manager) {
-        long id = manager.getId();
+        Long id = manager.getId();
         String department = manager.getDepartment();
         String name = manager.getName();
 
-        Long existing = departmentToManagerId.get(department);
+        Long existing = DEPARTMENT_TO_MANAGER_ID.get(department);
+        String existingName = MANAGER_NAME_BY_ID.get(id);
 
         if (existing != null) {
             throw new EmployeeDuplicateException(
@@ -39,19 +48,16 @@ public final class ParseRegistry {
             );
         }
 
-        if (employees.containsKey(id)) {
+        if (EMPLOYEES.containsKey(id)) {
             throw new EmployeeDuplicateException(
                     "Manager id conflicts with existing employee id: " + id);
         }
 
-        String existingName = managerNameById.get(id);
-
         if (existingName != null && !existingName.equals(name)) {
-                throw new EmployeeDuplicateException(
-                        "Manager id " + id + " already bound to name '" + existingName + "', got '" + name + "'");
+            throw new EmployeeDuplicateException(
+                    "Manager id " + id + " already bound to name '" + existingName + "', got '" + name + "'");
         }
-
-        managerNameById.put(id, name);
-        departmentToManagerId.put(department, id);
+        MANAGER_NAME_BY_ID.put(id, name);
+        DEPARTMENT_TO_MANAGER_ID.put(department, id);
     }
 }

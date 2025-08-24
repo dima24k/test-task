@@ -1,52 +1,41 @@
 package by.timo.practice.model;
 
-import by.timo.practice.util.InputArgsConstants;
+import by.timo.practice.type.ArgKey;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
-import static by.timo.practice.validate.SbRecordValidator.isStringEmpty;
-
-//добавить lombok
+@Getter
+@RequiredArgsConstructor
 public class ArgKeyValue {
     private final String key;
     private final String value;
 
-    public ArgKeyValue(String key, String value) {
-        this.key = Objects.requireNonNull(key);
-        this.value = value;
-    }
-
     public static ArgKeyValue get(String arg) {
-        if (isStringEmpty(arg)) {
-            throw new IllegalArgumentException("Argument must not be null");
-        }
-
-        if (arg.equals(InputArgsConstants.STAT)) {
+        if (Objects.equals(ArgKey.STAT.getKey(), arg)) {
             return new ArgKeyValue(arg, null);
         }
 
-        int eqIndex = arg.indexOf('=');
-
-        if (eqIndex == arg.length() - 1 || eqIndex < 0) {
-            throw new IllegalArgumentException("Missing value for argument: " + arg);
+        String statPrefix = ArgKey.STAT.getKey() + "=";
+        if (arg.startsWith(statPrefix)) {
+            throw new IllegalArgumentException("Argument " + ArgKey.STAT + " must not have a value");
         }
 
-        String key = arg.substring(0, eqIndex);
-        String value = arg.substring(eqIndex + 1);
+        int eqIndex = arg.indexOf('=');
+        if (eqIndex <= 0 || eqIndex == arg.length() - 1) {
+            throw new IllegalArgumentException("Invalid argument: " + arg);
+        }
 
-        return new ArgKeyValue(key, value);
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getValue() {
-        return value;
+        String keyPart = arg.substring(0, eqIndex);
+        String valuePart = arg.substring(eqIndex + 1);
+        return new ArgKeyValue(keyPart, valuePart);
     }
 
     @Override
     public String toString() {
-        return value != null ? key + "=" + value : key;
+        return value != null
+                ? key + "=" + value
+                : key;
     }
 }

@@ -1,13 +1,16 @@
 package by.timo.practice.validate;
 
-import by.timo.practice.model.enums.PostType;
+import by.timo.practice.type.PostType;
+import by.timo.practice.validate.strategy.ValidationStrategy;
 import by.timo.practice.validate.strategy.impl.EmployeeValidationStrategy;
 import by.timo.practice.validate.strategy.impl.ManagerValidationStrategy;
-import by.timo.practice.validate.strategy.ValidationStrategy;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 import java.util.Objects;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SbRecordValidator {
     public static final Map<PostType, ValidationStrategy> strategies = Map.of(
             PostType.EMPLOYEE, new EmployeeValidationStrategy(),
@@ -17,18 +20,12 @@ public final class SbRecordValidator {
     private static final String VALID_STRING_PATTERN = "^(?!\\s*$)[A-Za-z ]+$";
     private static final int EXPECTED_FIELDS_COUNT = 5;
 
-    private SbRecordValidator() {}
-
-    public static boolean isPostValid(PostType post) {
-        return post.equals(PostType.MANAGER) || post.equals(PostType.EMPLOYEE);
-    }
-
     public static boolean isSbRecordLengthValid(int sbRecordLength) {
         return sbRecordLength == EXPECTED_FIELDS_COUNT;
     }
 
     public static boolean isValidId(String id) {
-        if (isStringEmpty(id)) {
+        if (isStringNullOrEmpty(id)) {
             return false;
         }
 
@@ -44,7 +41,7 @@ public final class SbRecordValidator {
     }
 
     public static boolean isSalaryValid(String salary) {
-        if (isStringEmpty(salary)) {
+        if (isStringNullOrEmpty(salary)) {
             return false;
         }
 
@@ -55,7 +52,7 @@ public final class SbRecordValidator {
         }
     }
 
-    public static boolean isStringEmpty(String str) {
-        return str == null || str.isEmpty();
+    public static boolean isStringNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
     }
 }
