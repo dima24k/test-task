@@ -36,7 +36,7 @@ mvn clean package
 2. Запустите приложение с нужными параметрами:
 
 ```bash
-java -jar target/app.jar [параметры]
+java -jar target\app.jar [параметры]
 ```
  
 _Убедитесь, что вы запускаете из корня проекта, а не из папки target._
