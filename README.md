@@ -63,13 +63,13 @@ _Убедитесь, что вы запускаете из корня проек
 java -jar target\app.jar --sort=name --order=asc 
 ```
 
-Показать статистику по отделам в консоль:
+Показать статистику по департаментам в консоль:
 
 ````bash
 java -jar target\app.jar --stat
 ````
 
-Сохранить статистику по отделам в файл:
+Сохранить статистику по департаментам в файл:
 
 ````bash
 java -jar target\app.jar --sort=salary --order=desc --stat --output=file --path=output\stat.txt
